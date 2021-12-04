@@ -1,0 +1,8 @@
+max_rd_len={max_read_len}
+[LIB]
+avg_ins={insert_size}
+reverse_seq={reverse_seq}
+asm_flags={asm_flags}
+map_len=32
+q1={fastq1}
+q2={fastq2}
