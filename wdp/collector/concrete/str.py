@@ -8,6 +8,8 @@ class Str(ValueField[str]):
 
 
 class FileLike(Str):
+    __f__ = None
+
     def __init__(self, exists=True) -> None:
         self.exists = exists
         super().__init__()
@@ -16,6 +18,16 @@ class FileLike(Str):
         if self.exists and not path.isfile(value):
             raise ValueError(f"\"{value}\" is not a valid file.")
         return super().accept(value)
+
+    def open(self, mode="r"):
+        self.__f__ = open(self.inner, mode)
+        return self.__f__
+
+    def close(self):
+        self.__f__.close()
+
+    def file(self):
+        return self.__f__
 
 
 class DirLike(Str):

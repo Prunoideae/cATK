@@ -2,3 +2,4 @@ biodp/*
 documents/*
 tools/chimera-bin
 **/__pycache__/
+.vscode

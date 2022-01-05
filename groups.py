@@ -1,4 +1,5 @@
 from argparse import ArgumentTypeError
+from dataclasses import field
 from shutil import which
 from wdp.cli.model import Arg, ArgGroup
 from wdp.collector.concrete.common import SimpleField
@@ -53,25 +54,27 @@ class AlignArgs(ArgGroup):
                       long="seed-length",
                       default=19).field(Int().ranged(lower=0).unwrapped())
 
-    bwa_binary = Arg(required=False,
-                     help="the bwa binary path",
-                     meta="STR",
-                     long="bwa-binary",
-                     default="bwa"
-                     ).field(Str()
-                             .with_validator(throw_if_no_binary)
-                             .unwrapped())
+    hisat2_binary = Arg(required=False,
+                        help="the hisat2 binary path",
+                        meta="STR",
+                        long="hisat2-binary",
+                        default="hisat2"
+                        ).field(Str()
+                                .with_validator(throw_if_no_binary)
+                                .unwrapped())
 
     # Stole from UniversalArgs
     work_dir = DirLike(exists=False)
     keep_temp: bool = SimpleField(bool)
     align_dir: str
+    hisat2_build: str = None
 
     @oneshot
     def manifest(self):
         self.align_dir = DirLike(exists=False).accept(path.join(self.work_dir.inner, "align"))
         self.align_dir.make()
         self.align_dir = self.align_dir.unwrap()
+        self.hisat2_build = self.hisat2_binary + '-align'
 
 
 @singleton()
@@ -182,7 +185,7 @@ class AssembleArgs(ArgGroup):
 
 @singleton()
 class AssembleInputArgs(ArgGroup):
-    name = "assemble input file arguments"
+    name = "assemble input arguments"
 
     chimeric_reads = Arg(required=True,
                          help="the chimeric junctions of circRNAs in SAM",
@@ -219,6 +222,28 @@ class AssembleInputArgs(ArgGroup):
                  help="reads set 2 in fastq format, will switch to PE after specified",
                  short="2",
                  long="fastq2").field(FileLike(exists=False).unwrapped())
+
+
+@singleton()
+class AnnotateArgs(ArgGroup):
+    name = "annotate arguments"
+
+
+@singleton()
+class AnnotateInputArgs(ArgGroup):
+    name = "annotate input arguments"
+
+    gene_ref = Arg(required=True,
+                   help="the gene reference for annotation",
+                   meta="FILE",
+                   long="gene_ref",
+                   short="g").field(FileLike(exists=True))
+
+    mapped_pairs = Arg(required=True,
+                       help="the junction file",
+                       meta="FILE",
+                       long="mapped_pairs",
+                       short="m").field(FileLike(exists=True))
 
 
 @singleton()
