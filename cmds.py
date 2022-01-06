@@ -1,4 +1,4 @@
-from groups import AlignArgs, AlignInputArgs, AnnotateArgs, AnnotateInputArgs, AssembleArgs, AssembleInputArgs, ParseArgs, QuantificateArgs, UniversalArgs
+from groups import AlignArgs, AlignInputArgs, AssembleArgs, AssembleInputArgs, ParseArgs, QuantificateArgs, UniversalArgs
 from utils import async_system
 from wdp.cli.cli import command
 from wdp.runner.model import Runnable, Conditional
@@ -40,10 +40,9 @@ class Align(Runnable):
         min_len, max_len = map(int, self.parse.filter_length.split(","))
 
         if not self.input.prefix:
-            # build the hisat2 index
+            # build the bwa index
             prefix = path.join(self.align.align_dir, "db")
-            # await async_system(f"\"{self.align.bwa_binary}\" index -p {prefix} {self.input.db}")
-            await async_system(f"\"{self.align.hisat2_build}\" -p {self.universal.threads} \"{self.input.db}\" \"{prefix}\"")
+            await async_system(f"\"{self.align.bwa_binary}\" index -p {prefix} {self.input.db}")
             self.input.db = prefix
 
         mapped_fq1 = path.join(self.align.align_dir, "mapped.1.fq")
@@ -61,18 +60,15 @@ class Align(Runnable):
         # No penalty on pair mismatch and 5/3 end clipping
         # Recover some of the suppressed alignment
         # This is for junction reads' features.
-
-        # TODO: use hisat2
-        # await async_system(f"\"{self.align.bwa_binary}\""
-        #                    f" mem -L0 -t {self.universal.threads} -k {self.align.seed_length} "
-        #                    f"\"{self.input.db}\" \"{self.input.fq1}\""
-        #                    f"{_fq2}"
-        #                    f'| \"{self.parse.samtools_binary}\" view -Sh -q 30 - '
-        #                    f'| \"{self.parse.chimera_binary}\" chimera -p \"{out_pairs}\" -o \"{chimeric_sam}\"'
-        #                    f'| \"{self.parse.samtools_binary}\" view -bS '
-        #                    f"-@ {self.universal.threads} - "
-        #                    f'> \"{out_bam}\"')
-        await async_system(f"\"{self.align.hisat2_binary}\"")
+        await async_system(f"\"{self.align.bwa_binary}\""
+                           f" mem -L0 -t {self.universal.threads} -k {self.align.seed_length} "
+                           f"\"{self.input.db}\" \"{self.input.fq1}\""
+                           f"{_fq2}"
+                           f'| \"{self.parse.samtools_binary}\" view -Sh -q 30 - '
+                           f'| \"{self.parse.chimera_binary}\" chimera -p \"{out_pairs}\" -o \"{chimeric_sam}\"'
+                           f'| \"{self.parse.samtools_binary}\" view -bS '
+                           f"-@ {self.universal.threads} - "
+                           f'> \"{out_bam}\"')
 
         # sort | uniq | tee | chimera merge
         await async_system(f"sort \"{out_pairs}\" "
@@ -96,15 +92,10 @@ class Align(Runnable):
 class Annotate(Runnable):
     '''
     annotate the alignments by a reference genes list,
-    takes the junctions from align to annotate
+    this produces mapped junction reads and unmapped junction reads,
+    which will have completely different usage in workflows
     '''
-
-    input = AnnotateInputArgs
-    universal = UniversalArgs
-    annotate = AnnotateArgs
-
     async def run(self):
-
         return await super().run()
 
 
@@ -125,9 +116,8 @@ class Parse(Runnable):
 class Assemble(Runnable):
     '''
     assemble the circRNA transcriptome by the result of align,
-    outputs the circRNA sequences and filtered circRNA sites, 
-    mostly just a wrapped up SOAPdenovo-Trans, but will filter 
-    out unmapped sequences too.
+    outputs the circRNA sequences, mostly just a wrapped up SOAPdenovo-Trans
+    but will filter out unmapped sequences too
     '''
     input = AssembleInputArgs
     universal = UniversalArgs
