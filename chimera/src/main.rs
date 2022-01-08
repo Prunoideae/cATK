@@ -8,6 +8,7 @@ use crate::{
     overlap_extract::overlap_extract,
 };
 
+mod annotate;
 mod chimeric_extract;
 mod merge_regions;
 mod overlap_extract;
@@ -99,6 +100,13 @@ fn main() {
             (@arg output: -o --output [String] "output path, leave out to stdout")
             (@arg fasta: -a --fa +required [String] "chimeric reads path")
         )
+        (@subcommand annotate =>
+            (about: "Annotate the circular RNAs by given annotation")
+            (version: crate_version!())
+            (@arg juncs: -j --junctions_file [String] +required "junction file from align module")
+            (@arg reference: -r --reference_file [String] +required "gene annotation file")
+            (@arg output: -o --output [String] +required "write annotated circular RNA to")
+        )
     )
     .get_matches_safe()
     .unwrap_or_else(|x| x.exit());
@@ -112,5 +120,7 @@ fn main() {
     } else if matches.is_present("merge") {
         let matches = matches.subcommand_matches("merge").unwrap();
         merge_regions(matches);
+    } else if matches.is_present("annotate") {
+        let matches = matches.subcommand_matches("annotate").unwrap();
     }
 }
