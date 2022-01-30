@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 mod tests {
 
+    use crate::annotate::GenePred;
     use crate::chimeric_extract;
     use crate::PartialSAM;
     use crate::CIGAR;
@@ -45,5 +46,14 @@ mod tests {
         let (start, end) = chimeric_extract::calculate_regions(start, &cigar);
         assert_eq!(start, 1);
         assert_eq!(end, 103);
+    }
+
+    #[test]
+    fn test_genepred_parsing() {
+        let parse_string = "MIR6859-1	ENST00000619216.1	chr1	-	17368	17436	17368	17368	1	17368,	17436,";
+        let genepred = GenePred::from(parse_string.to_string());
+        println!("{:#?}", genepred);
+        assert_eq!(genepred.name, "MIR6859-1");
+        assert_eq!(genepred.exon_starts, vec![17368u64]);
     }
 }

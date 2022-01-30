@@ -4,7 +4,9 @@ use anyhow::Result;
 use std::collections::HashMap;
 
 use crate::{
-    chimeric_extract::chimeric_extract, merge_regions::merge_regions,
+    annotate::{annotate, salvage_single},
+    chimeric_extract::chimeric_extract,
+    merge_regions::merge_regions,
     overlap_extract::overlap_extract,
 };
 
@@ -101,11 +103,17 @@ fn main() {
             (@arg fasta: -a --fa +required [String] "chimeric reads path")
         )
         (@subcommand annotate =>
-            (about: "Annotate the circular RNAs by given annotation")
+            (about: "Annotate the circular RNAs by given reference")
             (version: crate_version!())
             (@arg juncs: -j --junctions_file [String] +required "junction file from align module")
             (@arg reference: -r --reference_file [String] +required "gene annotation file")
             (@arg output: -o --output [String] +required "write annotated circular RNA to")
+            (@arg extend: -e --extend +required [u64] "extended search length")
+            (@arg single: -s --single "output single matches")
+        )
+        (@subcommand salvage =>
+            (about: "Rescue more valid single hits from all single hits")
+            (version: crate_version!())
         )
     )
     .get_matches_safe()
@@ -122,5 +130,9 @@ fn main() {
         merge_regions(matches);
     } else if matches.is_present("annotate") {
         let matches = matches.subcommand_matches("annotate").unwrap();
+        annotate(matches)
+    } else if matches.is_present("salvage") {
+        let matches = matches.subcommand_matches("salvage").unwrap();
+        salvage_single(matches)
     }
 }
