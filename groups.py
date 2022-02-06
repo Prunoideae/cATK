@@ -256,7 +256,7 @@ class AnnotateInputArgs(ArgGroup):
                     help="the reference file input, in GenePred format",
                     meta="FILE",
                     long="reference",
-                    short='j').field(FileLike(exists=True).unwrapped())
+                    short='r').field(FileLike(exists=True).unwrapped())
 
     # Stole from UniversalArgs
     work_dir = DirLike(exists=False)

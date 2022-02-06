@@ -101,6 +101,7 @@ class Annotate(Runnable):
     universal = UniversalArgs
 
     async def run(self):
+        self.input.manifest()
 
         flags = []
         if self.annotate.edge:
@@ -111,7 +112,7 @@ class Annotate(Runnable):
         out_hits = path.join(self.input.annotate_dir, "out.pairs")
         await async_system(f"\"{self.annotate.chimera_binary}\" annotate "
                            f"-e {self.annotate.extend_length} "
-                           f"-j \"{self.input.juncs}\" -r \"{self.input.reference}\""
+                           f"-j \"{self.input.juncs}\" -r \"{self.input.reference}\" "
                            f"{' '.join(flags)} "
                            f"| python3 \"{self.annotate.merge_binary}\" "
                            f"> \"{out_hits}\"")
