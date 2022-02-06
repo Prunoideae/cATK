@@ -4,16 +4,15 @@ use anyhow::Result;
 use std::collections::HashMap;
 
 use crate::{
-    annotate::{annotate, salvage_single},
-    chimeric_extract::chimeric_extract,
-    merge_regions::merge_regions,
-    overlap_extract::overlap_extract,
+    annotate::annotate, chimeric_extract::chimeric_extract, merge_regions::merge_regions,
+    overlap_extract::overlap_extract, salvage::salvage,
 };
 
 mod annotate;
 mod chimeric_extract;
 mod merge_regions;
 mod overlap_extract;
+mod salvage;
 mod test;
 mod util;
 
@@ -134,6 +133,6 @@ fn main() {
         annotate(matches)
     } else if matches.is_present("salvage") {
         let matches = matches.subcommand_matches("salvage").unwrap();
-        salvage_single(matches)
+        salvage(matches)
     }
 }

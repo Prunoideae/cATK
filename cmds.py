@@ -180,6 +180,12 @@ class Assemble(Runnable):
         mapped = list(map(str.rstrip, open(scafseq_hits)))
 
 
+@command("salvage")
+class Salvage(Runnable):
+    async def run(self):
+        return await super().run()
+
+
 @command("quantificate")
 class Quantificate(Runnable, Conditional):
     '''

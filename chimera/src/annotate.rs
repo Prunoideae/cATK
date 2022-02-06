@@ -312,4 +312,3 @@ pub fn annotate(matches: &ArgMatches) {
     }
 }
 
-pub fn salvage_single(matches: &ArgMatches) {}
