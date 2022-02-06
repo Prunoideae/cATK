@@ -107,9 +107,10 @@ fn main() {
             (version: crate_version!())
             (@arg juncs: -j --junctions_file [String] +required "junction file from align module")
             (@arg reference: -r --reference_file [String] +required "gene annotation file")
-            (@arg output: -o --output [String] +required "write annotated circular RNA to")
+            (@arg output: -o --output [String] "write annotated circular RNA to")
             (@arg extend: -e --extend +required [u64] "extended search length")
             (@arg single: -s --single "output single matches")
+            (@arg edge: --edge "use start/end of genes as valid sites")
         )
         (@subcommand salvage =>
             (about: "Rescue more valid single hits from all single hits")

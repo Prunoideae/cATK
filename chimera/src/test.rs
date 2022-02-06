@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 mod tests {
 
+    use crate::annotate;
     use crate::annotate::GenePred;
     use crate::chimeric_extract;
     use crate::PartialSAM;
@@ -55,5 +56,20 @@ mod tests {
         println!("{:#?}", genepred);
         assert_eq!(genepred.name, "MIR6859-1");
         assert_eq!(genepred.exon_starts, vec![17368u64]);
+    }
+
+    #[test]
+    fn test_judge4() {
+        let (ss, ee, se, es) = (true, true, false, false);
+        assert_eq!(
+            annotate::judge4(ss, ee, se, es),
+            annotate::SpliceType::EXON_2
+        );
+
+        let (ss, ee, se, es) = (false, false, true, true);
+        assert_eq!(
+            annotate::judge4(ss, ee, se, es),
+            annotate::SpliceType::INTRON_2
+        );
     }
 }

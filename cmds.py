@@ -1,4 +1,4 @@
-from groups import AlignArgs, AlignInputArgs, AssembleArgs, AssembleInputArgs, ParseArgs, QuantificateArgs, UniversalArgs
+from groups import AlignArgs, AlignInputArgs, AnnotateArgs, AnnotateInputArgs, AssembleArgs, AssembleInputArgs, ParseArgs, QuantificateArgs, UniversalArgs
 from utils import async_system
 from wdp.cli.cli import command
 from wdp.runner.model import Runnable, Conditional
@@ -95,8 +95,27 @@ class Annotate(Runnable):
     this produces mapped junction reads and unmapped junction reads,
     which will have completely different usage in workflows
     '''
+
+    input = AnnotateInputArgs
+    annotate = AnnotateArgs
+    universal = UniversalArgs
+
     async def run(self):
-        return await super().run()
+
+        flags = []
+        if self.annotate.edge:
+            flags.append("--edge")
+        if self.annotate.single:
+            flags.append("--single")
+
+        out_hits = path.join(self.input.annotate_dir, "out.pairs")
+        await async_system(f"\"{self.annotate.chimera_binary}\" annotate "
+                           f"-e {self.annotate.extend_length} "
+                           f"-j \"{self.input.juncs}\" -r \"{self.input.reference}\""
+                           f"{' '.join(flags)} "
+                           f"| python3 \"{self.annotate.merge_binary}\" "
+                           f"> \"{out_hits}\"")
+        return out_hits
 
 
 @command("parse")

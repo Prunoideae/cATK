@@ -57,6 +57,7 @@ name = "chimera"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bitflags",
  "clap",
  "flate2",
  "rayon",

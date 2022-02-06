@@ -222,6 +222,55 @@ class AssembleInputArgs(ArgGroup):
 
 
 @singleton()
+class AnnotateArgs(ArgGroup):
+    chimera_binary = path.join(path.dirname(__file__), 'tools', "chimera-bin")
+    merge_binary = path.join(path.dirname(__file__), 'tools', "merge.py")
+
+    edge: bool = Arg(
+        help="if the start/end of gene will be considered as splice site",
+        long="edge",
+        short="e",
+        default=False).field(SimpleField(bool))
+
+    single: bool = Arg(
+        help="output single hits for salvation",
+        long="single",
+        short="s",
+        default=False).field(SimpleField(bool))
+
+    extend_length = Arg(default=10,
+                        help="the extended region for the hits",
+                        meta="INT",
+                        long="extend-length").field(Int().ranged(0,).unwrapped())
+
+
+@singleton()
+class AnnotateInputArgs(ArgGroup):
+    juncs = Arg(required=True,
+                help="the junction file input",
+                meta="FILE",
+                long="juncs",
+                short='j').field(FileLike(exists=True).unwrapped())
+
+    reference = Arg(required=True,
+                    help="the reference file input, in GenePred format",
+                    meta="FILE",
+                    long="reference",
+                    short='j').field(FileLike(exists=True).unwrapped())
+
+    # Stole from UniversalArgs
+    work_dir = DirLike(exists=False)
+    keep_temp: bool = SimpleField(bool)
+    annotate_dir: str
+
+    @oneshot
+    def manifest(self):
+        self.annotate_dir = DirLike(exists=False).accept(path.join(self.work_dir.inner, "annotate"))
+        self.annotate_dir.make()
+        self.annotate_dir = self.annotate_dir.unwrap()
+
+
+@singleton()
 class QuantificateArgs(ArgGroup):
     name = "quantificate arguments"
 
