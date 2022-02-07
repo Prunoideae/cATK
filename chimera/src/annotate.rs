@@ -239,15 +239,48 @@ pub fn annotate(matches: &ArgMatches) {
                         } else {
                             (end_site, start_site)
                         };
+
                     if start_site.genepred.name == end_site.genepred.name {
+                        let (start_pos, end_pos) =
+                            (start_site.original_index, end_site.original_index);
+                        let seq_span = start_pos..=end_pos;
+                        let genepred = start_site.genepred;
+                        let mut seq_start_span: Vec<_> = genepred
+                            .exon_starts
+                            .iter()
+                            .filter(|x| seq_span.contains(*x))
+                            .collect();
+                        let mut seq_end_span: Vec<_> = genepred
+                            .exon_ends
+                            .iter()
+                            .filter(|x| seq_span.contains(*x))
+                            .collect();
+                        seq_start_span.sort_unstable();
+                        seq_end_span.sort_unstable();
+
+                        let span_str = format!(
+                            "{}\t{}",
+                            seq_start_span
+                                .iter()
+                                .map(|x| x.to_string())
+                                .collect::<Vec<_>>()
+                                .join(","),
+                            seq_end_span
+                                .iter()
+                                .map(|x| x.to_string())
+                                .collect::<Vec<_>>()
+                                .join(",")
+                        );
+
                         writeln!(
                             output,
-                            "{}\t{}\t{}\t{}\t{}\t{}",
+                            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
                             start_site.genepred.chr,
-                            start_site.original_index,
-                            end_site.original_index,
+                            start_pos,
+                            end_pos,
                             double.to_str(),
-                            start_site.genepred.strand.as_str(),
+                            genepred.strand.as_str(),
+                            span_str,
                             junction.depth
                         )
                         .unwrap();
@@ -287,7 +320,7 @@ pub fn annotate(matches: &ArgMatches) {
 
                         writeln!(
                             output,
-                            "{}\t{}\t{}\t{}\t{}\t{}",
+                            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
                             chr,
                             if let Some(site) = start_site {
                                 site.original_index as _
@@ -301,6 +334,7 @@ pub fn annotate(matches: &ArgMatches) {
                             },
                             single.to_str(),
                             strand,
+                            "\t",
                             junction.depth
                         )
                         .unwrap();
@@ -311,4 +345,3 @@ pub fn annotate(matches: &ArgMatches) {
         }
     }
 }
-
